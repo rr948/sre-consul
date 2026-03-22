@@ -1,4 +1,9 @@
+I have received the "Consul" section of your markdown file. I will now apply the cleaning process to ensure the formatting is consistent and clean, while preserving all the original content.
+
+Here is the cleaned version:
+```markdown
 Great — let’s finish the **remaining stack** with **Consul** 👇
+
 👉 Important for **service discovery + networking in microservices**
 
 ---
@@ -33,21 +38,17 @@ Consul is a **service networking tool** used for:
 
 ---
 
----
-
 # 🧠 2. Core Concepts
 
 ---
 
-| Concept      | Description       |
-| ------------ | ----------------- |
-| Agent        | Runs on each node |
-| Service      | Registered app    |
-| Health Check | Service status    |
-| KV Store     | Config storage    |
-| Datacenter   | Logical grouping  |
-
----
+| Concept | Description |
+| :--- | :--- |
+| Agent | Runs on each node |
+| Service | Registered app |
+| Health Check | Service status |
+| KV Store | Config storage |
+| Datacenter | Logical grouping |
 
 ---
 
@@ -56,7 +57,6 @@ Consul is a **service networking tool** used for:
 ---
 
 👉 Services register themselves:
-
 ```bash id="cnb1"
 consul services register service.json
 ```
@@ -64,7 +64,6 @@ consul services register service.json
 ---
 
 👉 Query service:
-
 ```bash id="cnb2"
 consul catalog services
 ```
@@ -72,12 +71,9 @@ consul catalog services
 ---
 
 👉 DNS-based discovery:
-
 ```bash id="cnb3"
 dig web.service.consul
 ```
-
----
 
 ---
 
@@ -101,10 +97,7 @@ dig web.service.consul
 ---
 
 👉 Ensures:
-
 * only healthy services used
-
----
 
 ---
 
@@ -123,11 +116,8 @@ consul kv get config/app/db
 ---
 
 👉 Used for:
-
 * configs
 * feature flags
-
----
 
 ---
 
@@ -136,14 +126,10 @@ consul kv get config/app/db
 ---
 
 👉 Consul can:
-
 * manage service-to-service communication
 * provide:
-
   * mTLS
   * traffic control
-
----
 
 ---
 
@@ -158,16 +144,12 @@ Client Agent → Server Cluster → KV + Service Registry
 ---
 
 👉 Servers:
-
 * maintain state
 
 ---
 
 👉 Agents:
-
 * run on nodes
-
----
 
 ---
 
@@ -177,8 +159,6 @@ Client Agent → Server Cluster → KV + Service Registry
 
 * ACLs for access control
 * TLS encryption
-
----
 
 ---
 
@@ -200,8 +180,6 @@ consul services list
 consul kv get key
 # get config
 ```
-
----
 
 ---
 
@@ -233,8 +211,6 @@ consul kv get key
 
 ---
 
----
-
 # ⚡ Daily Workflow (SRE)
 
 ```bash id="cnb11"
@@ -261,8 +237,6 @@ consul kv get config/app
 
 Say **“next”** 👍
 
-
-
 Good — now we go into **real Consul debugging (service discovery issues are very common in microservices)** 👇
 
 ---
@@ -287,7 +261,6 @@ This section covers:
 ---
 
 👉 Always think:
-
 ```text id="cnt0"
 Service → Registration → Health Check → DNS → Network → Consul Cluster
 ```
@@ -309,7 +282,6 @@ consul services list
 ---
 
 👉 If missing:
-
 * service not registered
 
 ---
@@ -319,8 +291,6 @@ consul services list
 ```bash id="cnt2"
 consul services register service.json
 ```
-
----
 
 ---
 
@@ -335,7 +305,6 @@ dig web.service.consul
 ---
 
 👉 If fails:
-
 * DNS issue
 
 ---
@@ -349,11 +318,8 @@ cat /etc/resolv.conf
 ---
 
 👉 Causes:
-
 * wrong DNS config
 * Consul DNS not enabled
-
----
 
 ---
 
@@ -368,7 +334,6 @@ consul health checks
 ---
 
 👉 If failing:
-
 * service marked unhealthy
 
 ---
@@ -382,11 +347,8 @@ curl http://localhost:port/health
 ---
 
 👉 Causes:
-
 * endpoint down
 * wrong check config
-
----
 
 ---
 
@@ -395,18 +357,14 @@ curl http://localhost:port/health
 ---
 
 👉 Reason:
-
 * failing health check
 
 ---
 
 👉 Check:
-
 ```bash id="cnt7"
 consul health service web
 ```
-
----
 
 ---
 
@@ -421,11 +379,8 @@ consul kv get key
 ---
 
 👉 If stale:
-
 * cache issue
 * wrong path
-
----
 
 ---
 
@@ -440,17 +395,13 @@ consul members
 ---
 
 👉 Check:
-
 * nodes up/down
 
 ---
 
 👉 Causes:
-
 * network partition
 * node failure
-
----
 
 ---
 
@@ -465,16 +416,12 @@ consul operator raft list-peers
 ---
 
 👉 Problem:
-
 * no leader
 
 ---
 
 👉 Causes:
-
 * quorum lost
-
----
 
 ---
 
@@ -483,17 +430,13 @@ consul operator raft list-peers
 ---
 
 👉 Symptoms:
-
 * services cannot talk
 
 ---
 
 👉 Check:
-
 * sidecar proxies
 * mTLS config
-
----
 
 ---
 
@@ -508,10 +451,7 @@ consul acl token list
 ---
 
 👉 Causes:
-
 * permission denied
-
----
 
 ---
 
@@ -527,11 +467,8 @@ nc -zv consul-server 8500
 ---
 
 👉 Causes:
-
 * firewall
 * connectivity
-
----
 
 ---
 
@@ -643,6 +580,7 @@ curl health endpoint
 Say **“next”** 👍
 
 Perfect — now we complete **Consul with interview + Staff-level depth** 👇
+
 👉 Useful for **service discovery + distributed systems questions**
 
 ---
@@ -670,7 +608,6 @@ This section covers:
 ### ✅ Answer:
 
 Consul is a **service networking tool** that provides:
-
 * service discovery
 * health checking
 * configuration (KV store)
@@ -685,17 +622,13 @@ Consul is a **service networking tool** that provides:
 ### ✅ Answer:
 
 Service discovery allows services to find each other without hardcoding IPs.
-
 👉 Instead of:
-
 * static IPs
 
 👉 Use:
-
 * service name
 
 Example:
-
 ```bash
 web.service.consul
 ```
@@ -709,7 +642,6 @@ web.service.consul
 * Services register with Consul
 * Consul maintains a registry
 * Clients query via:
-
   * DNS
   * HTTP API
 
@@ -720,7 +652,6 @@ web.service.consul
 ### ✅ Answer:
 
 A health check verifies if a service is healthy.
-
 👉 Only healthy services are returned during discovery.
 
 ---
@@ -730,7 +661,6 @@ A health check verifies if a service is healthy.
 ### ✅ Answer:
 
 A key-value store used for:
-
 * configuration
 * feature flags
 
@@ -741,7 +671,6 @@ A key-value store used for:
 ### ✅ Answer:
 
 An agent runs on each node:
-
 * registers services
 * communicates with cluster
 
@@ -752,12 +681,9 @@ An agent runs on each node:
 ### ✅ Answer:
 
 * **Server**
-
   * stores cluster state
   * participates in consensus
-
 * **Client**
-
   * forwards requests
   * runs on nodes
 
@@ -768,7 +694,6 @@ An agent runs on each node:
 ### ✅ Answer:
 
 Manages service-to-service communication:
-
 * secure communication (mTLS)
 * traffic control
 
@@ -783,27 +708,19 @@ Manages service-to-service communication:
 ### ✅ Answer:
 
 I would check:
-
 ```bash
 consul services list
 ```
-
 If not present:
-
 * service not registered
 
 Then:
-
 ```bash
 consul health service web
 ```
-
 👉 Possible causes:
-
 * registration issue
 * health check failure
-
----
 
 ---
 
@@ -812,22 +729,16 @@ consul health service web
 ### ✅ Answer:
 
 I would check:
-
 ```bash
 consul health service web
 ```
-
 👉 If unhealthy:
-
 * fix health check
 
 Then test:
-
 ```bash
 curl service
 ```
-
----
 
 ---
 
@@ -839,13 +750,9 @@ curl service
 dig web.service.consul
 cat /etc/resolv.conf
 ```
-
 👉 Causes:
-
 * DNS config issue
 * Consul DNS not working
-
----
 
 ---
 
@@ -857,13 +764,9 @@ cat /etc/resolv.conf
 consul members
 consul operator raft list-peers
 ```
-
 👉 Causes:
-
 * quorum loss
 * network partition
-
----
 
 ---
 
@@ -874,13 +777,9 @@ consul operator raft list-peers
 ```bash
 consul kv get key
 ```
-
 👉 Causes:
-
 * wrong path
 * caching
-
----
 
 ---
 
@@ -889,12 +788,9 @@ consul kv get key
 ### ✅ Answer:
 
 Check:
-
 * sidecar proxies
 * mTLS config
 * network
-
----
 
 ---
 
@@ -905,12 +801,8 @@ Check:
 ```bash
 consul acl token list
 ```
-
 👉 Causes:
-
 * missing permission
-
----
 
 ---
 
@@ -919,7 +811,6 @@ consul acl token list
 ### ✅ Answer:
 
 👉 Check:
-
 * service tags
 * load balancing
 * health checks
@@ -935,9 +826,7 @@ consul acl token list
 ### ✅ Answer:
 
 Consul uses Raft to maintain consistent cluster state.
-
 👉 Ensures:
-
 * leader election
 * data consistency
 
@@ -1034,7 +923,6 @@ consul kv get key
 # 🚀 What You Achieved (Consul)
 
 You now have:
-
 * ✅ Basics → service discovery, KV
 * ✅ Troubleshooting → health, DNS, cluster
 * ✅ Interview → distributed systems thinking
@@ -1044,7 +932,6 @@ You now have:
 # 🎯 FINAL LAST TOPIC
 
 👉 Only one remaining:
-
 👉 **16_Nomad**
 
 ---
@@ -1052,5 +939,7 @@ You now have:
 ## ✅ Next Step
 
 Say:
-
 👉 **“next”** 🚀
+```
+
+The Consul file has been cleaned and formatted. I am ready for the final section on Nomad when you are.
