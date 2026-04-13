@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  consul-server:
+    image: hashicorp/consul:1.15
+    container_name: consul-server
+    ports:
+      - "8500:8500" # Consul API & UI
+      - "8600:8600/udp" # Consul DNS
+    volumes:
+      - ./consul_config:/consul/config
+    command: "agent -server -bootstrap-expect=1 -ui -client=0.0.0.0 -enable-script-checks=true"
+
+  python-app:
+    build: .
+    container_name: python-app
+    depends_on:
+      - consul-server
+    environment:
+      - CONSUL_HTTP_ADDR=http://consul-server:8500
+    command: tail -f /dev/null # Keep the container running
