@@ -1,0 +1,53 @@
+services:
+  # --- CONSUL SERVER CLUSTER (3 NODES) ---
+  consul-server-1:
+    image: hashicorp/consul:1.15
+    container_name: consul-server-1
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    volumes:
+      - ./consul_config:/consul/config
+    command: "agent -server -bootstrap-expect=3 -ui -node=consul-server-1 -client=0.0.0.0"
+
+  consul-server-2:
+    image: hashicorp/consul:1.15
+    container_name: consul-server-2
+    volumes:
+      - ./consul_config:/consul/config
+    command: "agent -server -node=consul-server-2 -retry-join=consul-server-1"
+
+  consul-server-3:
+    image: hashicorp/consul:1.15
+    container_name: consul-server-3
+    volumes:
+      - ./consul_config:/consul/config
+    command: "agent -server -node=consul-server-3 -retry-join=consul-server-1"
+
+  # --- APPLICATION NODE WITH CONSUL CLIENT (SIDECAR) ---
+  consul-client-1:
+    image: hashicorp/consul:1.15
+    container_name: consul-client-1
+    volumes:
+      - ./consul_config:/consul/config
+    command: "agent -node=app-node-1 -retry-join=consul-server-1 -client=0.0.0.0"
+    depends_on:
+      - consul-server-1
+    # --- THIS HEALTHCHECK IS THE KEY ---
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/v1/status/leader"]
+      interval: 5s
+      timeout: 1s
+      retries: 10
+
+  python-app:
+    build: .
+    container_name: python-app
+    environment:
+      - CONSUL_HTTP_ADDR=http://consul-client-1:8500
+    # --- THIS IS THE OTHER PART OF THE FIX ---
+    # Now depends on the SERVICE being HEALTHY, not just started.
+    depends_on:
+      consul-client-1:
+        condition: service_healthy
+    command: tail -f /dev/null

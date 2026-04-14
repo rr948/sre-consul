@@ -1,0 +1,129 @@
+import requests
+import json
+import os
+import time
+
+# --- CONFIGURATION ---
+# The address of the local sidecar agent, provided by docker-compose
+CONSUL_URL = os.environ.get("CONSUL_HTTP_ADDR")
+# This is the master token you will get from the 'acl bootstrap' command.
+# PASTE YOUR TOKEN HERE!
+CONSUL_TOKEN = "82c9d12e-f1da-f8f0-e4a8-61fb87964388"
+# --------------------
+
+# This header will be used for all standard API requests
+HEADERS = {"X-Consul-Token": CONSUL_TOKEN, "Content-Type": "application/json"}
+
+
+def demo_peers():
+    print("\n--- 1. DEMO: PEERS ---")
+    try:
+        response = requests.get(f"{CONSUL_URL}/v1/status/peers", headers=HEADERS)
+        response.raise_for_status()
+        peers = response.json()
+        print(f"✅ Successfully queried Raft peers. Found {len(peers)} peers (servers).")
+        for peer in peers:
+            print(f"  - Peer: {peer}")
+    except Exception as e:
+        print(f"❌ Error getting peers: {e}")
+
+def demo_nodes_and_services():
+    print("\n--- 2. DEMO: NODES & SERVICES ---")
+    try:
+        service_payload = {"Name": "api-service", "ID": "api-1", "Port": 8080, "tags": ["production", "api"]}
+        requests.put(f"{CONSUL_URL}/v1/agent/service/register", data=json.dumps(service_payload), headers=HEADERS).raise_for_status()
+        print("✅ Successfully registered 'api-service' on the local agent ('app-node-1').")
+        print("➡️  VERIFY: In the UI, go to Nodes -> app-node-1 to see this service.")
+    except Exception as e:
+        print(f"❌ Error registering service: {e}")
+
+def demo_kv():
+    print("\n--- 3. DEMO: KEY/VALUE (KV) STORE ---")
+    try:
+        kv_payload = "db.my-company.internal"
+        # For KV, the payload is raw data, not JSON, so we remove the Content-Type header for this call.
+        kv_headers = {"X-Consul-Token": CONSUL_TOKEN}
+        requests.put(f"{CONSUL_URL}/v1/kv/config/database/hostname", data=kv_payload, headers=kv_headers).raise_for_status()
+        print("✅ Successfully wrote value to 'config/database/hostname'.")
+        print("➡️  VERIFY: In the UI, go to the Key/Value tab.")
+    except Exception as e:
+        print(f"❌ Error with KV store: {e}")
+
+def demo_intentions():
+    print("\n--- 4. DEMO: INTENTIONS (SERVICE MESH) ---")
+    try:
+        # Add a more robust delay to ensure the service has propagated to the servers before creating an intention.
+        print("   (Waiting 5 seconds for service mesh to initialize...)")
+        time.sleep(5)
+        intention_payload = {"SourceName": "dashboard-app", "DestinationName": "api-service", "Action": "allow"}
+        requests.post(f"{CONSUL_URL}/v1/connect/intentions", data=json.dumps(intention_payload), headers=HEADERS).raise_for_status()
+        print("✅ Successfully created intention: 'dashboard-app' is now allowed to connect to 'api-service'.")
+        print("➡️  VERIFY: In the UI, go to the Intentions tab.")
+    except Exception as e:
+        print(f"❌ Error creating intention: {e}")
+
+def demo_full_acl_workflow():
+    print("\n--- 5. DEMO: FULL ACL WORKFLOW (POLICIES, ROLES, TOKENS) ---")
+    try:
+        # A. Create a read-only ACL Policy using the correct Consul API endpoint
+        policy_name = "kv-readonly-policy"
+        policy_payload = {
+            "Name": policy_name,
+            "Rules": 'key_prefix "config/" { policy = "read" }'
+        }
+        requests.put(f"{CONSUL_URL}/v1/acl/policy", data=json.dumps(policy_payload), headers=HEADERS).raise_for_status()
+        print(f"✅ Successfully created ACL Policy: '{policy_name}'")
+
+        # B. Create an ACL Role that uses the policy
+        role_name = "database-config-reader"
+        role_payload = {
+            "Name": role_name,
+            "Policies": [{"Name": policy_name}]
+        }
+        requests.put(f"{CONSUL_URL}/v1/acl/role", data=json.dumps(role_payload), headers=HEADERS).raise_for_status()
+        print(f"✅ Successfully created ACL Role: '{role_name}'")
+
+        # C. Create a new, temporary Token from that role
+        token_payload = {
+            "Description": "Temporary token for the reader app",
+            "Roles": [{"Name": role_name}]
+        }
+        response = requests.put(f"{CONSUL_URL}/v1/acl/token", data=json.dumps(token_payload), headers=HEADERS)
+        response.raise_for_status()
+        new_token_secret_id = response.json()['SecretID']
+        print(f"✅ Successfully created a new, less-privileged token from the role.")
+        print(f"  - New Token SecretID (first 8 chars): {new_token_secret_id[:8]}...")
+        print("➡️  VERIFY: In the UI, go to the ACL tab to see the new Policy, Role, and Token.")
+
+        # D. Test the new token's permissions
+        print("--- Testing new token's permissions... ---")
+        test_headers = {"X-Consul-Token": new_token_secret_id}
+        # This read should succeed
+        requests.get(f"{CONSUL_URL}/v1/kv/config/database/hostname", headers=test_headers).raise_for_status()
+        print("  - ✅ Read Test: PASSED. New token can read from 'config/'.")
+        # This write should fail
+        try:
+            write_response = requests.put(f"{CONSUL_URL}/v1/kv/config/newkey", data="test", headers=test_headers)
+            if write_response.status_code == 403:
+                print("  - ✅ Write Test: PASSED. New token was correctly denied (403 Forbidden).")
+            else:
+                 print(f"  - ❌ Write Test: FAILED. Expected 403, but got {write_response.status_code}.")
+        except Exception as e:
+             print(f"  - ❌ Write Test: FAILED with exception {e}.")
+
+    except Exception as e:
+        print(f"❌ Error during ACL workflow: {e}")
+
+
+if __name__ == "__main__":
+    if CONSUL_TOKEN == "YOUR_BOOTSTRAP_TOKEN_HERE":
+        print("❌ FATAL: Please paste your bootstrap token into the 'CONSUL_TOKEN' variable in the script before running.")
+    else:
+        print("🚀 Starting Consul Demo In 3 Seconds...")
+        time.sleep(3)
+        demo_peers()
+        demo_nodes_and_services()
+        demo_kv()
+        demo_intentions()
+        demo_full_acl_workflow()
+        print("\n🎉 Demo complete!")
